@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ask a Question</title>
+</head>
+<body>
+  <h1>Ask a Question</h1>
+  <form id="question-form">
+    <input type="text" id="question" placeholder="Type your question here" required>
+    <button type="submit">Ask</button>
+  </form>
+  <div id="response"></div>
+
+  <script>
+    // Load conversation history from local storage or initialize as empty array
+    let conversationHistory = JSON.parse(localStorage.getItem("conversationHistory")) || [];
+
+    document.getElementById("question-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const question = document.getElementById("question").value;
+
+      fetch("http://127.0.0.1:8000/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userInput: question,
+          conversationHistory: conversationHistory
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Display only the assistant's response text
+        document.getElementById("response").innerText = "Response: " + data.response;
+        // Update conversation history with the data returned from the server
+        conversationHistory = data.conversationHistory;
+        // Store updated conversation history in local storage
+        localStorage.setItem("conversationHistory", JSON.stringify(conversationHistory));
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        document.getElementById("response").innerText = "An error occurred.";
+      });
+    });
+  </script>
+</body>
+</html>
